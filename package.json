@@ -1,0 +1,13 @@
+{
+  "name": "runtogether",
+  "version": "1.0.0",
+  "private": true,
+  "description": "RunTogether: reservas de salidas de running para dos (HTML/JS + Supabase + Resend)",
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.3.0"
+  }
+}

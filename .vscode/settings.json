@@ -1,0 +1,4 @@
+{
+  "deno.enablePaths": ["supabase/functions"],
+  "liveServer.settings.port": 5500
+}

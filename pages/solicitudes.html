@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f4ef">
+  <title>RunTogether — Solicitudes</title>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="booting">
+  <main class="shell">
+    <header id="app-header" class="topbar"></header>
+
+    <section class="hero compact-hero">
+      <div>
+        <div class="eyebrow">VUESTRAS PROPUESTAS</div>
+        <h1>¿Nos <em>vemos?</em></h1>
+        <p class="intro">Solicitudes, contrapropuestas y salidas que ya tenéis cerradas.</p>
+      </div>
+    </section>
+
+    <div id="sections"><p class="muted">Cargando solicitudes…</p></div>
+
+    <footer>Hecho para sumar kilómetros, no complicaciones. <span>♥</span></footer>
+  </main>
+
+  <dialog id="action-dialog" class="modal">
+    <form id="action-form" method="dialog">
+      <div class="modal-head">
+        <div><div class="eyebrow" id="action-eyebrow"></div><h2 id="action-title"></h2></div>
+        <button type="button" class="close-button" data-close="action-dialog" aria-label="Cerrar">×</button>
+      </div>
+      <div id="action-summary" class="summary-card"></div>
+      <label for="action-message">Mensaje (opcional)</label>
+      <textarea id="action-message" rows="2" maxlength="240"></textarea>
+      <div id="action-ideas" class="ideas"></div>
+      <button id="action-submit" class="button primary full" type="submit"></button>
+    </form>
+  </dialog>
+
+  <dialog id="counter-dialog" class="modal">
+    <form id="counter-form" method="dialog">
+      <div class="modal-head">
+        <div><div class="eyebrow">CONTRAPROPUESTA</div><h2>¿Y si mejor…?</h2></div>
+        <button type="button" class="close-button" data-close="counter-dialog" aria-label="Cerrar">×</button>
+      </div>
+      <div class="two-col">
+        <div><label for="counter-date">Fecha</label><input id="counter-date" type="date" required></div>
+        <div><label for="counter-time">Hora</label><input id="counter-time" type="time" required></div>
+      </div>
+      <label for="counter-duration">Duración (min)</label>
+      <input id="counter-duration" type="number" min="15" max="300" step="5" required>
+      <label for="counter-message">Mensaje (opcional)</label>
+      <textarea id="counter-message" rows="2" maxlength="240"></textarea>
+      <div id="counter-ideas" class="ideas"></div>
+      <button class="button primary full" type="submit">Enviar contrapropuesta <span>🔁</span></button>
+    </form>
+  </dialog>
+
+  <div id="toast" role="status" aria-live="polite" class="toast"></div>
+  <script type="module" src="../js/solicitudes.js"></script>
+</body>
+</html>

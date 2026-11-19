@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f4ef">
+  <title>RunTogether — ¿Corres conmigo?</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="booting">
+  <main class="shell">
+    <header id="app-header" class="topbar"></header>
+
+    <section class="hero">
+      <div>
+        <div class="eyebrow">EL PLAN DE LA SEMANA</div>
+        <h1 id="greeting">¿Hoy compartimos <em>kilómetros?</em></h1>
+        <p class="intro" id="hero-sub">Organizad vuestras salidas sin complicaros la vida.</p>
+      </div>
+      <div id="stats" class="stats"></div>
+    </section>
+
+    <div class="toolbar">
+      <div><span class="section-kicker">VUESTRA AGENDA</span><h2 id="week-label">Esta semana</h2></div>
+      <div class="week-nav">
+        <button id="prev-week" class="icon-button" type="button" aria-label="Semana anterior">‹</button>
+        <button id="today-week" class="chip-button" type="button">Hoy</button>
+        <button id="next-week" class="icon-button" type="button" aria-label="Semana siguiente">›</button>
+      </div>
+    </div>
+    <div id="legend" class="legend"></div>
+    <div id="week-grid" class="week-grid"><p class="muted">Cargando la semana…</p></div>
+
+    <footer>Hecho para sumar kilómetros, no complicaciones. <span>♥</span></footer>
+  </main>
+
+  <button id="improvise-button" class="fab" type="button">💌 ¿Y si improvisamos?</button>
+
+  <dialog id="join-dialog" class="modal">
+    <form id="join-form" method="dialog">
+      <div class="modal-head">
+        <div><div class="eyebrow">ME APUNTO</div><h2>¿Corremos juntos?</h2></div>
+        <button type="button" class="close-button" data-close="join-dialog" aria-label="Cerrar">×</button>
+      </div>
+      <div id="join-summary" class="summary-card"></div>
+      <label for="join-message">Un mensaje (opcional)</label>
+      <textarea id="join-message" rows="2" maxlength="240" placeholder="¿Me guardas sitio?"></textarea>
+      <div id="join-ideas" class="ideas"></div>
+      <button class="button primary full" type="submit">Enviar solicitud <span>👟</span></button>
+    </form>
+  </dialog>
+
+  <dialog id="proposal-dialog" class="modal">
+    <form id="proposal-form" method="dialog">
+      <div class="modal-head">
+        <div><div class="eyebrow">PROPUESTA</div><h2>Propón un momento</h2></div>
+        <button type="button" class="close-button" data-close="proposal-dialog" aria-label="Cerrar">×</button>
+      </div>
+      <div class="two-col">
+        <div><label for="proposal-date">Fecha</label><input id="proposal-date" type="date" required></div>
+        <div><label for="proposal-time">Hora</label><input id="proposal-time" type="time" value="07:00" required></div>
+      </div>
+      <div class="two-col">
+        <div><label for="proposal-duration">Duración (min)</label><input id="proposal-duration" type="number" min="15" max="300" step="5" value="45" required></div>
+        <div><label for="proposal-title">Plan</label><input id="proposal-title" maxlength="70" placeholder="Rodaje por la playa"></div>
+      </div>
+      <label for="proposal-message">Mensaje (opcional)</label>
+      <textarea id="proposal-message" rows="2" maxlength="240" placeholder="¿Te apetece?"></textarea>
+      <div id="proposal-ideas" class="ideas"></div>
+      <button class="button primary full" type="submit">Enviar propuesta <span>💌</span></button>
+    </form>
+  </dialog>
+
+  <div id="toast" role="status" aria-live="polite" class="toast"></div>
+  <script type="module" src="js/agenda.js"></script>
+</body>
+</html>

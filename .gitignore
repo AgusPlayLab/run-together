@@ -1,0 +1,15 @@
+# Dependencias (solo para tests)
+node_modules/
+
+# Secretos locales (nunca subir service_role ni RESEND_API_KEY)
+.env
+.env.*
+supabase/.temp/
+supabase/.branches/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Lock generado por deno check local
+supabase/functions/**/deno.lock

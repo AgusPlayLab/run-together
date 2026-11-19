@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f4ef">
+  <title>RunTogether — Mis salidas</title>
+  <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body class="booting">
+  <main class="shell">
+    <header id="app-header" class="topbar"></header>
+
+    <section class="hero compact-hero">
+      <div>
+        <div class="eyebrow">TU PLANIFICACIÓN</div>
+        <h1>Mis <em>salidas</em></h1>
+        <p class="intro">Tu semana tipo, los descansos y los cambios puntuales. Lo que publiques aquí lo verá la otra persona.</p>
+      </div>
+    </section>
+
+    <section class="requests-section">
+      <div class="toolbar compact">
+        <div><span class="section-kicker">SEMANA TIPO</span><h2>Lo habitual</h2></div>
+        <button id="add-weekly-button" class="button primary" type="button">＋ Añadir salida</button>
+      </div>
+      <div id="weekly-list" class="plan-list"><p class="muted">Cargando…</p></div>
+    </section>
+
+    <section class="requests-section">
+      <div class="toolbar compact">
+        <div><span class="section-kicker">FECHAS CONCRETAS</span><h2>Cambios puntuales</h2></div>
+      </div>
+      <div class="action-row">
+        <button id="add-once-button" class="chip-button" type="button">＋ Salida puntual</button>
+        <button id="add-rest-button" class="chip-button" type="button">😴 Descanso puntual</button>
+        <button id="add-exception-button" class="chip-button" type="button">🔁 Cambiar una salida habitual</button>
+      </div>
+      <div id="dated-list" class="booking-list"></div>
+    </section>
+
+    <section class="requests-section">
+      <div class="toolbar compact"><div><span class="section-kicker">TU PERFIL</span><h2>Cómo te ven</h2></div></div>
+      <form id="profile-form" class="login-card profile-card">
+        <div class="two-col">
+          <div><label for="profile-name">Nombre</label><input id="profile-name" maxlength="40" required></div>
+          <div><label for="profile-emoji">Emoji</label><input id="profile-emoji" maxlength="8" required></div>
+        </div>
+        <label class="check"><input id="profile-notify" type="checkbox"> Avisarme por email de solicitudes y respuestas</label>
+        <button class="button primary" type="submit">Guardar perfil</button>
+      </form>
+    </section>
+
+    <footer>Hecho para sumar kilómetros, no complicaciones. <span>♥</span></footer>
+  </main>
+
+  <dialog id="session-dialog" class="modal">
+    <form id="session-form" method="dialog">
+      <div class="modal-head">
+        <div><div class="eyebrow" id="session-eyebrow">NUEVA SALIDA</div><h2 id="session-heading">Una salida más</h2></div>
+        <button type="button" class="close-button" data-close="session-dialog" aria-label="Cerrar">×</button>
+      </div>
+      <input id="session-id" type="hidden">
+      <div class="segmented" role="radiogroup" aria-label="Repetición">
+        <label><input type="radio" name="recurrence" value="weekly" checked> Cada semana</label>
+        <label><input type="radio" name="recurrence" value="once"> Solo un día</label>
+      </div>
+      <div class="two-col">
+        <div id="session-day-field"><label for="session-day">Día</label>
+          <select id="session-day">
+            <option value="1">Lunes</option><option value="2">Martes</option><option value="3">Miércoles</option><option value="4">Jueves</option>
+            <option value="5">Viernes</option><option value="6">Sábado</option><option value="7">Domingo</option>
+          </select></div>
+        <div id="session-date-field" class="hidden"><label for="session-date">Fecha</label><input id="session-date" type="date"></div>
+        <div><label for="session-time">Hora</label><input id="session-time" type="time" value="07:00" required></div>
+      </div>
+      <div class="two-col">
+        <div><label for="session-duration">Duración (min)</label><input id="session-duration" type="number" min="15" max="300" step="5" value="45" required></div>
+        <div><label for="session-category">Tipo</label>
+          <select id="session-category">
+            <option value="easy">Rodaje suave</option><option value="hard">Entrenamiento duro</option><option value="long">Tirada larga</option>
+            <option value="recovery">Recuperación</option><option value="walk">Paseo</option><option value="improvised">Improvisado</option><option value="other">Otro</option>
+          </select></div>
+      </div>
+      <label for="session-title">Título</label>
+      <input id="session-title" maxlength="70" placeholder="Rodaje suave, series, paseo…" required>
+      <label for="session-meeting">Punto de encuentro (opcional)</label>
+      <input id="session-meeting" maxlength="120" placeholder="Puerta del parque, paseo marítimo…">
+      <label for="session-description">Un detalle (opcional)</label>
+      <textarea id="session-description" rows="2" maxlength="240" placeholder="Ritmo tranquilo, ruta por la playa…"></textarea>
+      <button class="button primary full" type="submit">Publicar salida <span>↗</span></button>
+    </form>
+  </dialog>
+
+  <dialog id="rest-dialog" class="modal">
+    <form id="rest-form" method="dialog">
+      <div class="modal-head">
+        <div><div class="eyebrow">DESCANSO</div><h2>Hoy toca sofá 😴</h2></div>
+        <button type="button" class="close-button" data-close="rest-dialog" aria-label="Cerrar">×</button>
+      </div>
+      <label for="rest-date">Fecha</label><input id="rest-date" type="date" required>
+      <label for="rest-note">Nota (opcional)</label><input id="rest-note" maxlength="120" placeholder="Piernas cargadas, viaje…">
+      <button class="button primary full" type="submit">Marcar descanso <span>😴</span></button>
+    </form>
+  </dialog>
+
+  <dialog id="exception-dialog" class="modal">
+    <form id="exception-form" method="dialog">
+      <div class="modal-head">
+        <div><div class="eyebrow">EXCEPCIÓN</div><h2>Solo por esta vez</h2></div>
+        <button type="button" class="close-button" data-close="exception-dialog" aria-label="Cerrar">×</button>
+      </div>
+      <label for="exception-session">Salida habitual</label>
+      <select id="exception-session" required></select>
+      <label for="exception-date">Fecha</label>
+      <select id="exception-date" required></select>
+      <div class="segmented" role="radiogroup" aria-label="Cambio">
+        <label><input type="radio" name="exception-kind" value="cancelled" checked> Ese día no salgo</label>
+        <label><input type="radio" name="exception-kind" value="moved"> Cambio la hora</label>
+      </div>
+      <div id="exception-time-field" class="hidden"><label for="exception-time">Nueva hora</label><input id="exception-time" type="time"></div>
+      <label for="exception-note">Nota (opcional)</label>
+      <input id="exception-note" maxlength="240" placeholder="Reunión temprano, mejor a la tarde…">
+      <button class="button primary full" type="submit">Guardar cambio <span>🔁</span></button>
+    </form>
+  </dialog>
+
+  <div id="toast" role="status" aria-live="polite" class="toast"></div>
+  <script type="module" src="../js/mis-salidas.js"></script>
+</body>
+</html>
