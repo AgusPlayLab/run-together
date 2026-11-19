@@ -36,9 +36,9 @@ select id, 'SU_NOMBRE', email, '🏃‍♀️' from auth.users where email = 'SU
 
 **Authentication → URL Configuration**:
 
-- **Site URL**: `https://agusplaylab.github.io/RunTogether/`
+- **Site URL**: `https://agusplaylab.github.io/run-together/`
 - **Redirect URLs**:
-  - `https://agusplaylab.github.io/RunTogether/**`
+  - `https://agusplaylab.github.io/run-together/**`
   - `http://127.0.0.1:5500/**` y `http://localhost:5500/**` (Live Server)
 
 Sin esto el enlace mágico no vuelve a la app. Con contraseña funciona igualmente.
@@ -61,7 +61,7 @@ supabase link --project-ref febogdjpoxbyfhetwgip
 
 # Secretos (RESEND_API_KEY probablemente ya existe porque lo usa resend-emails de Maldives)
 supabase secrets list
-supabase secrets set RT_APP_URL="https://agusplaylab.github.io/RunTogether"
+supabase secrets set RT_APP_URL="https://agusplaylab.github.io/run-together"
 supabase secrets set RT_EMAIL_FROM="RunTogether <runtogether@TU-DOMINIO-VERIFICADO>"
 # Solo si no existía:
 # supabase secrets set RESEND_API_KEY="re_xxx"
@@ -96,7 +96,7 @@ npm test
 
 ## 8. Publicar en GitHub Pages
 
-1. Crea el repositorio `agusplaylab/RunTogether` y sube el contenido de esta carpeta (incluido `js/config.js`).
+1. Repositorio: [AgusPlayLab/run-together](https://github.com/AgusPlayLab/run-together) (rama `main`, incluye `js/config.js`).
 2. **Settings → Pages → Deploy from a branch → `main` / `(root)`**.
 3. Comprueba que la URL publicada está en las Redirect URLs del paso 4.
 
