@@ -1,10 +1,10 @@
 // Valida la migración en un Postgres embebido (PGlite) con un stub mínimo de Supabase Auth.
 import { test, before } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { PGlite } from "@electric-sql/pglite";
 
-const MIGRATION = new URL("../supabase/migrations/20261119000000_runtogether_init.sql", import.meta.url);
+const MIGRATIONS = new URL("../supabase/migrations/", import.meta.url);
 const A = "11111111-1111-1111-1111-111111111111"; // miembro
 const B = "22222222-2222-2222-2222-222222222222"; // miembro
 const C = "33333333-3333-3333-3333-333333333333"; // usuario autenticado ajeno (p. ej. de Maldives)
@@ -31,9 +31,12 @@ before(async () => {
     alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
     insert into auth.users values ('${A}', 'a@x.com'), ('${B}', 'b@x.com'), ('${C}', 'c@x.com');
   `);
-  const sql = readFileSync(MIGRATION, "utf8");
-  await db.exec(sql);
-  await db.exec(sql); // idempotente
+  const files = readdirSync(MIGRATIONS).filter((f) => f.endsWith(".sql")).sort();
+  for (const file of files) {
+    const sql = readFileSync(new URL(file, MIGRATIONS), "utf8");
+    await db.exec(sql);
+    await db.exec(sql); // idempotente
+  }
   await db.exec(`insert into public.rt_profiles (user_id, display_name, email) values ('${A}', 'Jose', 'a@x.com'), ('${B}', 'Ella', 'b@x.com');`);
   const row = (await db.query(`select (current_date + 3)::text as d, extract(isodow from current_date + 3)::int as dow`)).rows[0];
   date = row.d; dow = row.dow;
@@ -89,6 +92,12 @@ test("excepciones por fecha: cancelar y mover una ocurrencia", async () => {
   const { booking_id } = await rpcResult(B, `select rt_request_join($1, ($2::date + 14)) as r`, [sessionId, date]);
   const t = await as(B, `select to_char(scheduled_at at time zone 'Europe/Madrid', 'HH24:MI') as t from rt_bookings where id = $1`, [booking_id]);
   assert.equal(t.rows[0].t, "09:15");
+
+  await as(A, `insert into rt_session_exceptions (session_id, owner_id, exception_date, kind, new_start_time, new_duration_minutes, new_title)
+               values ($1, $2, ($3::date + 21), 'moved', '07:00', 90, 'Tirada larga')`, [sessionId, A, date]);
+  const changed = await rpcResult(B, `select rt_request_join($1, ($2::date + 21)) as r`, [sessionId, date]);
+  const b = (await as(B, `select duration_minutes, title from rt_bookings where id = $1`, [changed.booking_id])).rows[0];
+  assert.deepEqual(b, { duration_minutes: 90, title: "Tirada larga" });
 });
 
 test("descansos fijos únicos por día", async () => {

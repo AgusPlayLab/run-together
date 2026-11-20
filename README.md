@@ -12,7 +12,7 @@ Es el mismo modo de trabajo que Maldives VIP Experience y slow-reveal, y el mism
 | **Acceso privado** | Email + contraseña o enlace mágico. Sin registro público: solo los dos perfiles de `rt_profiles`. |
 | **Agenda compartida** | Semana de lunes a domingo con un carril para cada persona: 🏃 corre, 😴 descanso o ❔ sin planificar. Navegación entre semanas. |
 | **Varias salidas por día** | Semanales o puntuales, con tipo, duración, punto de encuentro y detalle. |
-| **Excepciones** | "Este lunes no salgo" o "este lunes a las 8" sin tocar la semana tipo. Descansos fijos o puntuales. |
+| **Excepciones** | "Este lunes no salgo" o "este lunes cambio": hora, duración, tipo, título, punto de encuentro o detalle solo para esa fecha, sin tocar la semana tipo. Descansos fijos o puntuales. |
 | **Me apunto 👟** | Solicitar unirse a una salida del otro, con ideas de mensaje ("¿Me guardas sitio? 😉"). |
 | **¿Y si improvisamos? 💌** | Proponer un momento libre. |
 | **Respuestas** | Aceptar, rechazar o contraproponer otra hora. Solo responde a quien le toca. Se detectan solapamientos. |
@@ -41,6 +41,7 @@ RunTogether/
 ├── assets/favicon.svg
 ├── supabase/
 │   ├── migrations/20261119000000_runtogether_init.sql   # Esquema, RLS y RPC
+│   ├── migrations/20261120000000_runtogether_exception_details.sql   # Cambios puntuales completos
 │   └── functions/rt-send-notification/index.ts          # Emails con Resend
 ├── docs/
 │   ├── SETUP.md                # Puesta en marcha paso a paso

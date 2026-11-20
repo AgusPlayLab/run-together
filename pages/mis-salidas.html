@@ -120,9 +120,25 @@
       <select id="exception-date" required></select>
       <div class="segmented" role="radiogroup" aria-label="Cambio">
         <label><input type="radio" name="exception-kind" value="cancelled" checked> Ese día no salgo</label>
-        <label><input type="radio" name="exception-kind" value="moved"> Cambio la hora</label>
+        <label><input type="radio" name="exception-kind" value="moved"> Ese día la cambio</label>
       </div>
-      <div id="exception-time-field" class="hidden"><label for="exception-time">Nueva hora</label><input id="exception-time" type="time"></div>
+      <div id="exception-change-fields" class="hidden">
+        <div class="two-col">
+          <div><label for="exception-time">Hora</label><input id="exception-time" type="time"></div>
+          <div><label for="exception-duration">Duración (min)</label><input id="exception-duration" type="number" min="15" max="300" step="5"></div>
+        </div>
+        <label for="exception-category">Tipo</label>
+        <select id="exception-category">
+          <option value="easy">Rodaje suave</option><option value="hard">Entrenamiento duro</option><option value="long">Tirada larga</option>
+          <option value="recovery">Recuperación</option><option value="walk">Paseo</option><option value="improvised">Improvisado</option><option value="other">Otro</option>
+        </select>
+        <label for="exception-title">Título</label>
+        <input id="exception-title" maxlength="70" placeholder="Rodaje suave, series, paseo…">
+        <label for="exception-meeting">Punto de encuentro (opcional)</label>
+        <input id="exception-meeting" maxlength="120" placeholder="Puerta del parque, paseo marítimo…">
+        <label for="exception-description">Un detalle (opcional)</label>
+        <textarea id="exception-description" rows="2" maxlength="240" placeholder="Hoy series en la pista…"></textarea>
+      </div>
       <label for="exception-note">Nota (opcional)</label>
       <input id="exception-note" maxlength="240" placeholder="Reunión temprano, mejor a la tarde…">
       <button class="button primary full" type="submit">Guardar cambio <span>🔁</span></button>

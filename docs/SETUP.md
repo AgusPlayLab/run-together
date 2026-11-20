@@ -13,7 +13,9 @@ Maldives no usa Supabase Auth; RunTogether sí, así que aparecerán dos usuario
 
 ## 2. Crear las tablas
 
-**Opción A (recomendada):** abre `supabase/migrations/20261119000000_runtogether_init.sql`, pégalo entero en **SQL Editor → Run**. Es idempotente: se puede ejecutar más de una vez.
+**Opción A (recomendada):** abre `supabase/migrations/20261119000000_runtogether_init.sql`, pégalo entero en **SQL Editor → Run**. Después haz lo mismo con `supabase/migrations/20261120000000_runtogether_exception_details.sql` (cambios puntuales de duración, título, tipo, punto de encuentro y detalle). Ambos son idempotentes: se pueden ejecutar más de una vez.
+
+> Si ya tenías la app instalada, basta con ejecutar el segundo archivo.
 
 **Opción B:** pega el prompt de [SUPABASE_PROMPT.md](SUPABASE_PROMPT.md) en el asistente de IA de Supabase, revisa su propuesta y ejecútala.
 

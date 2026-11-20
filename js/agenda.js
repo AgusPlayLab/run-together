@@ -153,6 +153,8 @@ function init(ctx) {
     let flag = "";
     if (o.cancelled) flag = `<span class="chip muted-chip">Este día no sale${o.exception?.note ? ` · ${escapeHtml(o.exception.note)}` : ""}</span>`;
     else if (o.moved) flag = `<span class="chip">🔁 Cambiada a las ${o.start}</span>`;
+    else if (o.modified) flag = `<span class="chip">✏️ Cambios para este día</span>`;
+    if (o.modified && o.exception?.note) flag += `<span class="chip muted-chip">${escapeHtml(o.exception.note)}</span>`;
 
     let status = "";
     if (o.booking) {

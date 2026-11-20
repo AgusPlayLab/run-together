@@ -43,6 +43,23 @@ test("una excepción cancela o mueve solo esa fecha", () => {
   assert.equal(next[0].people[ME].occurrences[0].cancelled, false);
 });
 
+test("un cambio puntual sustituye solo los campos indicados ese día", () => {
+  const data = { ...empty, sessions: [session({ day_of_week: 4, meeting_point: "Parque" })], exceptions: [
+    { session_id: "s1", exception_date: "2026-11-26", kind: "moved", new_start_time: "07:00:00",
+      new_duration_minutes: 90, new_title: "Tirada larga", new_category: null, new_description: null, new_meeting_point: "" },
+  ] };
+  const [occ] = buildWeek(MONDAY, data, [ME, HER], NOW)[3].people[ME].occurrences;
+  assert.equal(occ.moved, false);
+  assert.equal(occ.modified, true);
+  assert.equal(occ.session.id, "s1");
+  assert.equal(occ.session.duration_minutes, 90);
+  assert.equal(occ.session.title, "Tirada larga");
+  assert.equal(occ.session.category, "easy");
+  assert.equal(occ.session.meeting_point, "");
+  const [nextWeek] = buildWeek(new Date(2026, 10, 30), data, [ME, HER], NOW)[3].people[ME].occurrences;
+  assert.equal(nextWeek.session.title, "Rodaje");
+});
+
 test("salida puntual sustituye a un descanso fijo ese día", () => {
   const days = buildWeek(MONDAY, { ...empty,
     sessions: [session({ recurrence: "once", day_of_week: null, session_date: "2026-11-25" })],

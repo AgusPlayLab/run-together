@@ -3,7 +3,7 @@ import { requireMember, renderHeader, toast, escapeHtml, wireDialogs, withBusy, 
   formatDay, capitalize } from "./shared.js";
 import { loadMyPlan, saveSession, setSessionActive, deleteSession, saveException, deleteException,
   addRestDay, deleteRestDay, updateProfile } from "./api.js";
-import { DAY_NAMES, toISODate, parseISODate, addDays, isoDow, shortTime } from "./schedule.js";
+import { DAY_NAMES, toISODate, parseISODate, addDays, isoDow, shortTime, applyException } from "./schedule.js";
 
 const $ = (id) => document.getElementById(id);
 const UPCOMING_WEEKS = 8;
@@ -83,48 +83,78 @@ function init(ctx) {
   const kindInputs = document.querySelectorAll('input[name="exception-kind"]');
   const syncKind = () => {
     const moved = document.querySelector('input[name="exception-kind"]:checked').value === "moved";
-    $("exception-time-field").classList.toggle("hidden", !moved);
-    $("exception-time").required = moved;
+    $("exception-change-fields").classList.toggle("hidden", !moved);
+    ["exception-time", "exception-duration", "exception-title"].forEach((id) => { $(id).required = moved; });
   };
   kindInputs.forEach((r) => r.addEventListener("change", syncKind));
 
-  const fillExceptionDates = () => {
-    const session = plan.sessions.find((s) => s.id === $("exception-session").value);
+  const selectedSession = () => plan.sessions.find((s) => s.id === $("exception-session").value);
+
+  // Rellena el formulario con lo ya guardado para esa fecha o, si no hay nada, con la salida habitual.
+  const fillExceptionFields = () => {
+    const session = selectedSession();
+    if (!session) return;
+    const existing = plan.exceptions.find((x) => x.session_id === session.id && x.exception_date === $("exception-date").value);
+    const effective = applyException(session, existing);
+    document.querySelector(`input[name="exception-kind"][value="${existing?.kind || "cancelled"}"]`).checked = true;
+    $("exception-time").value = shortTime(existing?.kind === "moved" ? existing.new_start_time : session.start_time);
+    $("exception-duration").value = effective.duration_minutes;
+    $("exception-category").value = effective.category;
+    $("exception-title").value = effective.title;
+    $("exception-meeting").value = effective.meeting_point || "";
+    $("exception-description").value = effective.description || "";
+    $("exception-note").value = existing?.note || "";
+    syncKind();
+  };
+
+  const fillExceptionDates = (selectedDate = null) => {
+    const session = selectedSession();
     if (!session) { $("exception-date").innerHTML = ""; return; }
     const today = new Date();
-    let first = addDays(today, (session.day_of_week - isoDow(today) + 7) % 7);
-    $("exception-date").innerHTML = Array.from({ length: UPCOMING_WEEKS }, (_, i) => {
-      const iso = toISODate(addDays(first, i * 7));
-      return `<option value="${iso}">${escapeHtml(capitalize(formatDay(parseISODate(iso))))}</option>`;
-    }).join("");
-    $("exception-time").value = shortTime(session.start_time);
+    const first = addDays(today, (session.day_of_week - isoDow(today) + 7) % 7);
+    const dates = Array.from({ length: UPCOMING_WEEKS }, (_, i) => toISODate(addDays(first, i * 7)));
+    if (selectedDate && !dates.includes(selectedDate)) dates.push(selectedDate);
+    $("exception-date").innerHTML = dates.map((iso) =>
+      `<option value="${iso}">${escapeHtml(capitalize(formatDay(parseISODate(iso))))}</option>`).join("");
+    if (selectedDate) $("exception-date").value = selectedDate;
+    fillExceptionFields();
   };
-  $("exception-session").addEventListener("change", fillExceptionDates);
+  $("exception-session").addEventListener("change", () => fillExceptionDates());
+  $("exception-date").addEventListener("change", fillExceptionFields);
 
-  function openException(sessionId = null) {
+  function openException(sessionId = null, date = null) {
     const weekly = plan.sessions.filter((s) => s.recurrence === "weekly" && s.is_active);
     if (!weekly.length) { toast("Primero añade alguna salida habitual 🙂"); return; }
     $("exception-form").reset();
     $("exception-session").innerHTML = weekly.map((s) =>
       `<option value="${s.id}">${DAY_NAMES[s.day_of_week - 1]} ${shortTime(s.start_time)} · ${escapeHtml(s.title)}</option>`).join("");
     if (sessionId) $("exception-session").value = sessionId;
-    fillExceptionDates();
-    syncKind();
+    fillExceptionDates(date);
     $("exception-dialog").showModal();
   }
+
+  // Solo se guarda lo que cambia respecto a la salida habitual; lo demás se hereda.
+  const changed = (value, base) => (value === (base ?? "") ? null : value);
 
   $("exception-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const kind = document.querySelector('input[name="exception-kind"]:checked').value;
+    const session = selectedSession();
+    const moved = kind === "moved";
     const saved = await withBusy(e.submitter, () => saveException({
-      session_id: $("exception-session").value,
+      session_id: session.id,
       owner_id: me.user_id,
       exception_date: $("exception-date").value,
       kind,
-      new_start_time: kind === "moved" ? $("exception-time").value : null,
+      new_start_time: moved ? $("exception-time").value : null,
+      new_duration_minutes: moved ? changed(Number($("exception-duration").value), session.duration_minutes) : null,
+      new_category: moved ? changed($("exception-category").value, session.category) : null,
+      new_title: moved ? changed($("exception-title").value.trim(), session.title) : null,
+      new_meeting_point: moved ? changed($("exception-meeting").value.trim(), session.meeting_point) : null,
+      new_description: moved ? changed($("exception-description").value.trim(), session.description) : null,
       note: $("exception-note").value.trim() || null,
     }));
-    if (saved) { $("exception-dialog").close(); toast(kind === "cancelled" ? "Anotado: ese día no sales 👌" : "Hora cambiada 🔁"); load(); }
+    if (saved) { $("exception-dialog").close(); toast(moved ? "Cambios guardados para ese día 🔁" : "Anotado: ese día no sales 👌"); load(); }
   });
 
   // ---------- Botones ----------
@@ -146,6 +176,10 @@ function init(ctx) {
       "add-day": () => openSession({ recurrence: "weekly", day: Number(day) }),
       edit: () => openSession({ session }),
       exception: () => openException(id),
+      "edit-exception": () => {
+        const x = plan.exceptions.find((ex) => ex.id === id);
+        if (x) openException(x.session_id, x.exception_date);
+      },
       toggle: () => withBusy(btn, async () => { await setSessionActive(id, !session.is_active); toast(session.is_active ? "Salida en pausa ⏸" : "Salida reactivada ▶"); }),
       delete: () => confirm("¿Borrar esta salida? Las solicitudes ya hechas se conservan.") &&
         withBusy(btn, async () => { await deleteSession(id); toast("Salida borrada"); }),
@@ -157,7 +191,7 @@ function init(ctx) {
       "delete-rest": () => withBusy(btn, () => deleteRestDay(id)),
       "delete-exception": () => withBusy(btn, () => deleteException(id)),
     };
-    if (ops[op]) { await ops[op](); if (!["add-day", "edit", "exception"].includes(op)) load(); }
+    if (ops[op]) { await ops[op](); if (!["add-day", "edit", "exception", "edit-exception"].includes(op)) load(); }
   });
 
   // ---------- Perfil ----------
@@ -222,6 +256,17 @@ function init(ctx) {
     }).join("");
   }
 
+  function exceptionSummary(x) {
+    const parts = [];
+    if (shortTime(x.new_start_time) !== shortTime(x.session?.start_time || "")) parts.push(`a las ${shortTime(x.new_start_time)}`);
+    if (x.new_duration_minutes != null) parts.push(`${x.new_duration_minutes} min`);
+    if (x.new_category != null) parts.push(CATEGORY[x.new_category]);
+    if (x.new_title != null) parts.push(`«${x.new_title}»`);
+    if (x.new_meeting_point != null) parts.push(x.new_meeting_point ? `📍 ${x.new_meeting_point}` : "sin punto de encuentro");
+    if (x.new_description != null) parts.push("otro detalle");
+    return parts.length ? `Cambia: ${parts.join(", ")}` : "Cambios para ese día";
+  }
+
   function renderDated() {
     const items = [
       ...plan.sessions.filter((s) => s.recurrence === "once").map((s) => ({ date: s.session_date, html: `
@@ -230,9 +275,12 @@ function init(ctx) {
         <div class="dated-kind">😴 Descanso${r.note ? ` · ${escapeHtml(r.note)}` : ""}</div>
         <button class="icon-button small danger" type="button" data-op="delete-rest" data-id="${r.id}" aria-label="Quitar descanso">🗑</button>` })),
       ...plan.exceptions.map((x) => ({ date: x.exception_date, html: `
-        <div class="dated-kind">${x.kind === "cancelled" ? "🚫 No sales" : `🔁 Cambia a las ${shortTime(x.new_start_time)}`} ·
+        <div class="dated-kind">${x.kind === "cancelled" ? "🚫 No sales" : `🔁 ${escapeHtml(exceptionSummary(x))}`} ·
           ${escapeHtml(x.session?.title || "")} (${shortTime(x.session?.start_time || "")})${x.note ? ` · ${escapeHtml(x.note)}` : ""}</div>
-        <button class="icon-button small danger" type="button" data-op="delete-exception" data-id="${x.id}" aria-label="Quitar excepción">🗑</button>` })),
+        <div class="row-actions">
+          <button class="icon-button small" type="button" data-op="edit-exception" data-id="${x.id}" title="Editar cambio" aria-label="Editar cambio">✎</button>
+          <button class="icon-button small danger" type="button" data-op="delete-exception" data-id="${x.id}" aria-label="Quitar excepción">🗑</button>
+        </div>` })),
     ].sort((a, b) => a.date.localeCompare(b.date));
 
     $("dated-list").innerHTML = items.length

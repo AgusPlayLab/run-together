@@ -39,6 +39,22 @@ export function timeToMinutes(t) {
 
 export function shortTime(t) { return String(t).slice(0, 5); }
 
+// Campos que una excepción 'moved' puede sobrescribir para una fecha concreta.
+const OVERRIDES = {
+  duration_minutes: "new_duration_minutes", title: "new_title", category: "new_category",
+  description: "new_description", meeting_point: "new_meeting_point",
+};
+
+// Salida tal y como queda ese día: la habitual con los cambios puntuales aplicados.
+export function applyException(session, exception) {
+  if (exception?.kind !== "moved") return session;
+  const effective = { ...session };
+  for (const [field, override] of Object.entries(OVERRIDES)) {
+    if (exception[override] != null) effective[field] = exception[override];
+  }
+  return effective;
+}
+
 // Combina fecha local (YYYY-MM-DD) y hora (HH:MM) en un Date local.
 export function combine(isoDate, time) {
   const d = parseISODate(isoDate);
@@ -75,12 +91,13 @@ export function buildWeek(weekStart, data, userIds, now = new Date()) {
           const booking = data.bookings.find((b) =>
             b.session_id === s.id && b.occurrence_date === iso && LIVE_STATUSES.includes(b.status)) || null;
           return {
-            session: s,
+            session: applyException(s, exception),
             date: iso,
             start,
             startsAt,
             cancelled: exception?.kind === "cancelled",
-            moved: exception?.kind === "moved",
+            moved: exception?.kind === "moved" && start !== shortTime(s.start_time),
+            modified: exception?.kind === "moved",
             exception,
             booking,
             isPast: startsAt <= now,
