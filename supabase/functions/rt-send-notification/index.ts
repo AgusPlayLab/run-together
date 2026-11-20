@@ -7,6 +7,7 @@
 //   RESEND_API_KEY  (obligatorio para enviar; sin él el aviso queda como 'skipped')
 //   RT_EMAIL_FROM   (opcional, por defecto "RunTogether <onboarding@resend.dev>")
 //   RT_APP_URL      (opcional, URL pública de la app para el botón del correo)
+//   RT_EMAIL_COPY_TO (opcional, email que recibe una copia de cada aviso enviado a la otra persona)
 // SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY los inyecta Supabase automáticamente.
 
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -178,16 +179,28 @@ Deno.serve(async (req: Request) => {
   });
 
   try {
-    const res = await fetch("https://api.resend.com/emails", {
+    const send = (to: string, subject: string) => fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
       body: JSON.stringify({
         from: Deno.env.get("RT_EMAIL_FROM") ?? "RunTogether <onboarding@resend.dev>",
-        to: [recipient.email],
-        subject: copy.subject(actor.display_name, when),
+        to: [to],
+        subject,
         html,
       }),
     });
+    const subject = copy.subject(actor.display_name, when);
+
+    // Copia independiente (p. ej. al email de la cuenta de Resend, que siempre la recibe en modo pruebas).
+    // Va en un envío aparte para que un fallo del destinatario principal no la bloquee.
+    const copyTo = Deno.env.get("RT_EMAIL_COPY_TO")?.trim();
+    if (copyTo && copyTo.toLowerCase() !== recipient.email.toLowerCase()) {
+      const copyRes = await send(copyTo, `[Copia · para ${recipient.display_name}] ${subject}`)
+        .catch((err) => { console.error("Copy sending failed", err); return null; });
+      if (copyRes && !copyRes.ok) console.error("Resend copy error", copyRes.status, await copyRes.text());
+    }
+
+    const res = await send(recipient.email, subject);
     if (!res.ok) {
       const detail = await res.text();
       console.error("Resend error", res.status, detail);

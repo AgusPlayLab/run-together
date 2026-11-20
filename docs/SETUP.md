@@ -65,6 +65,8 @@ supabase link --project-ref febogdjpoxbyfhetwgip
 supabase secrets list
 supabase secrets set RT_APP_URL="https://agusplaylab.github.io/run-together"
 supabase secrets set RT_EMAIL_FROM="RunTogether <runtogether@TU-DOMINIO-VERIFICADO>"
+# Opcional: copia de cada aviso que reciba la otra persona (p. ej. el email de tu cuenta de Resend)
+# supabase secrets set RT_EMAIL_COPY_TO="tu-email-de-resend@ejemplo.com"
 # Solo si no existía:
 # supabase secrets set RESEND_API_KEY="re_xxx"
 
@@ -73,7 +75,7 @@ supabase functions deploy rt-send-notification
 
 **Diferencia con Maldives:** esta función se despliega **sin** `--no-verify-jwt`. Solo la pueden llamar los dos usuarios autenticados, y cada uno solo puede disparar los avisos que ha generado él.
 
-**Resend:** sin dominio verificado, `onboarding@resend.dev` solo entrega al email de la cuenta de Resend. Para que le lleguen a ella, verifica un dominio en Resend y úsalo en `RT_EMAIL_FROM`. Si falta la clave o el envío falla, la reserva se guarda igual y el aviso queda en `rt_notifications.email_status` (`skipped` o `failed`) con el motivo.
+**Resend:** sin dominio verificado, `onboarding@resend.dev` solo entrega al email de la cuenta de Resend. Para que le lleguen a ella, verifica un dominio en Resend y úsalo en `RT_EMAIL_FROM`. Mientras tanto, con `RT_EMAIL_COPY_TO` = el email de tu cuenta de Resend recibes una copia (asunto `[Copia · para …]`) de cada aviso dirigido a ella; la copia va en un envío aparte porque Resend rechaza el envío completo si algún destinatario no está permitido. Si falta la clave o el envío falla, la reserva se guarda igual y el aviso queda en `rt_notifications.email_status` (`skipped` o `failed`) con el motivo.
 
 Logs: **Edge Functions → rt-send-notification → Logs**, o `supabase functions logs rt-send-notification`.
 
